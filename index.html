@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DB WORK — Accommodation Management</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="login" class="login">
+  <div class="login-card">
+    <div class="logo">DB WORK <small>Accommodation Management</small></div>
+    <h1>Sign in</h1>
+    <p class="muted">Access the accommodation management system.</p>
+    <label>Username<input id="username" autocomplete="username"></label>
+    <label>Password<input id="password" type="password" autocomplete="current-password"></label>
+    <button class="btn primary wide" id="loginBtn">Sign in</button>
+    <div id="loginError" class="error"></div>
+    <details class="demo"><summary>Demo access</summary>
+      <p><b>admin</b> / <b>admin123</b> — Administrator</p>
+      <p><b>editor</b> / <b>editor123</b> — Editor</p>
+      <p><b>viewer</b> / <b>viewer123</b> — Viewer</p>
+    </details>
+  </div>
+</div>
+
+<div id="locationSelect" class="login hidden">
+  <div class="location-shell">
+    <div class="location-head">
+      <div>
+        <div class="logo">DB WORK <small>Accommodation Management</small></div>
+        <h1>Select accommodation</h1>
+        <p class="muted">Choose the accommodation you want to manage.</p>
+      </div>
+      <button id="locationLogout" class="logout">Log out</button>
+    </div>
+    <div id="locationGrid" class="location-grid"></div>
+    <div id="adminAccommodationArea" class="admin-location-area hidden"></div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <aside class="sidebar">
+    <div class="brand">DB WORK<small>Accommodation Management</small></div>
+    <div id="currentAccommodation" class="current-accommodation"></div>
+    <nav>
+      <button class="nav active" data-page="dashboard">Dashboard</button>
+      <button class="nav" data-page="rooms">Rooms</button>
+      <button class="nav" data-page="residents">Residents</button>
+      <button class="nav" data-page="arrivals">Arrivals <span id="arrivalBadge" class="nav-badge">0</span></button>
+      <button class="nav" data-page="coordinator">Coordinator</button>
+      <button class="nav admin-only" data-page="accommodations">Accommodations</button>
+      <button class="nav admin-only" data-page="users">Users & Permissions</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <button id="changeAccommodation" class="sidebar-action">⇄ Change Accommodation</button>
+    </div>
+  </aside>
+  <main>
+    <header><span id="date"></span><div><b id="displayName"></b> <span id="role" class="badge"></span> <button id="logout" class="logout">Log out</button></div></header>
+    <div class="content">
+      <section id="dashboard" class="page active">
+        <h1>Dashboard</h1><p class="muted">Accommodation overview · <b id="dashboardAccommodation"></b></p>
+        <div class="metrics" id="metrics"></div>
+        <h2>Quick Actions</h2><div class="actions">
+          <button class="action edit-only" data-op="checkin"><b>＋ Check In</b><span>Add a resident</span></button>
+          <button class="action edit-only" data-op="move"><b>↔ Move Room</b><span>Change a resident's room</span></button>
+          <button class="action edit-only" data-op="checkout"><b>− Check Out</b><span>Register a departure</span></button>
+          <button class="action" data-page-jump="arrivals"><b>🔔 Arrivals</b><span>See upcoming arrivals</span></button>
+        </div>
+        <h2>Rooms Overview</h2><div id="dashboardRooms" class="room-grid"></div>
+      </section>
+
+      <section id="rooms" class="page">
+        <h1>Rooms</h1><p class="muted">Room occupancy and availability · <b id="roomsAccommodation"></b></p>
+        <div class="panel"><div class="toolbar"><input id="roomSearch" placeholder="Search room..."><select id="roomFilter"><option value="all">All statuses</option><option value="available">Available</option><option value="partial">Partially Occupied</option><option value="full">Full</option></select><button class="btn primary admin-only" id="addRoom">＋ Add Room</button></div><div id="roomsGrid" class="room-grid"></div><div id="roomAdmin" class="panel-sub admin-only"></div></div>
+      </section>
+
+      <section id="residents" class="page">
+        <h1>Residents</h1><p class="muted">Resident database · <b id="residentsAccommodation"></b></p>
+        <div class="panel"><div class="toolbar"><input id="residentSearch" placeholder="Search name, room or country..."><button class="btn primary edit-only" data-op="checkin">＋ Add Resident</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Full Name</th><th>Room</th><th>Country</th><th>Company</th><th>Phone</th><th>Coordinator</th><th>Arrival</th><th>Actions</th></tr></thead><tbody id="residentRows"></tbody></table></div></div>
+      </section>
+
+      <section id="arrivals" class="page">
+        <h1>Arrivals</h1><p class="muted">People registered by coordinators who are coming to <b id="arrivalsAccommodation"></b>.</p>
+        <div class="panel"><div id="arrivalsList"></div></div>
+      </section>
+
+      <section id="coordinator" class="page">
+        <h1>Coordinator</h1><p class="muted">Arrival information intake · <b id="coordAccommodation"></b></p>
+        <div class="panel"><div class="note"><b id="availableForCoord"></b> rooms currently have at least one free bed. Coordinators do not see current residents in this form.</div>
+        <div class="form two"><label>Arrival Full Name<input id="arrName"></label><label>Phone<input id="arrPhone"></label><label>Coordinator Name<input id="arrCoordinator"></label><label>Country<input id="arrCountry"></label><label>Arrival Date<input id="arrDate" type="date"></label><label>Number of People<input id="arrPeople" type="number" min="1" value="1"></label><label>Driver Name<input id="driverName"></label><label>Vehicle / Plate<input id="vehicle"></label><label class="span2">Notes<textarea id="arrNotes"></textarea></label></div><button class="btn primary edit-only" id="saveArrival">Save Arrival Information</button><div id="arrivalSaved"></div></div>
+      </section>
+
+      <section id="accommodations" class="page">
+        <h1>Accommodations</h1>
+        <p class="muted">Administrator-only management of all accommodation locations.</p>
+        <div class="panel">
+          <div class="toolbar"><input id="accommodationSearch" placeholder="Search accommodation..."><button class="btn primary admin-only" id="addAccommodation">＋ Add Accommodation</button></div>
+          <div id="accommodationRows"></div>
+        </div>
+      </section>
+
+      <section id="users" class="page">
+        <h1>Users & Permissions</h1><p class="muted">Administrator user management</p>
+        <div class="panel note"><b>Administrator</b> has full access. <b>Editor</b> can edit operational data. <b>Viewer</b> is read-only.</div>
+        <div class="panel"><button class="btn primary" id="addUser">＋ Add User</button><div class="table-wrap"><table><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Action</th></tr></thead><tbody id="userRows"></tbody></table></div></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="modal" class="modal hidden"><div class="modal-box"><button id="modalClose" class="x">×</button><h2 id="modalTitle"></h2><div id="modalBody"></div><div class="modal-actions"><button id="modalCancel" class="btn">Cancel</button><button id="modalSave" class="btn primary">Save</button></div></div></div>
+<script src="data.js"></script><script src="app.js"></script>
+</body></html>
